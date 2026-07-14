@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>At-Risk Members · Squad Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #a0c0ff, #1b2a5e 80%);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 3rem;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #0b1a3b;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateX(-3px);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0b1a3b;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+            color: #dc3545;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #0b1a3b;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: rgba(11, 26, 59, 0.2);
+            color: #0b1a3b;
+        }
+
+        .btn-primary:hover {
+            background: rgba(11, 26, 59, 0.35);
+            color: #fff;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-3px);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0b1a3b;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(11, 26, 59, 0.7);
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        /* Members List */
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .member-item {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .member-item:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(4px);
+        }
+
+        .member-item.high-risk {
+            border-left: 4px solid #dc3545;
+        }
+
+        .member-item.medium-risk {
+            border-left: 4px solid #ffc107;
+        }
+
+        .member-item.low-risk {
+            border-left: 4px solid #28a745;
+        }
+
+        .member-item.no-habits {
+            border-left: 4px solid #6c757d;
+        }
+
+        .member-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1b2a5e, #3a5a9a);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: #0b1a3b;
+            font-size: 1.05rem;
+        }
+
+        .member-stats-mini {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            color: rgba(11, 26, 59, 0.7);
+        }
+
+        .member-stats-mini span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .member-stats-mini .completed {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .member-stats-mini .missed {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .member-progress-mini {
+            width: 100px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .progress-fill-mini {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill-mini.high {
+            background: linear-gradient(90deg, #dc3545, #e74c3c);
+        }
+
+        .progress-fill-mini.medium {
+            background: linear-gradient(90deg, #ffc107, #fd7e14);
+        }
+
+        .progress-fill-mini.low {
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+
+        .progress-fill-mini.no-habits {
+            background: #6c757d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(11, 26, 59, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #0b1a3b;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+            color: #0b1a3b;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions {
+                justify-content: stretch;
+            }
+            .header-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .member-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .member-stats-mini {
+                justify-content: space-around;
+            }
+            .member-progress-mini {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="goToDashboard()">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </button>
+                <h1>
+                    <i class="fas fa-users"></i>
+                    <span id="pageTitle">Members</span>
+                </h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalMembers">0</div>
+                <div class="stat-label">Total Members</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="avgCompletion">0%</div>
+                <div class="stat-label">Avg Completion</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="totalHabits">0</div>
+                <div class="stat-label">Total Habits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-value" id="missedToday">0</div>
+                <div class="stat-label">Missed Today</div>
+            </div>
+        </div>
+
+        <!-- Members List -->
+        <div id="membersContainer">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading members...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ---------- STATE ----------
+        let members = [];
+        let currentUser = null;
+
+        // ---------- DOM REFS ----------
+        const membersContainer = document.getElementById('membersContainer');
+        const toast = document.getElementById('toast');
+
+        // Stats elements
+        const totalMembers = document.getElementById('totalMembers');
+        const avgCompletion = document.getElementById('avgCompletion');
+        const totalHabits = document.getElementById('totalHabits');
+        const missedToday = document.getElementById('missedToday');
+
+        let toastTimeout = null;
+
+        // ---------- HELPERS ----------
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getInitial(name) {
+            if (!name) return 'U';
+            return name.charAt(0).toUpperCase();
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // ---------- NAVIGATION ----------
+        function goToDashboard() {
+            window.location.href = '/dashboard';
+        }
+
+        // ---------- API HELPERS ----------
+        async function apiFetch(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(options.headers || {})
+                }
+            });
+            return response;
+        }
+
+        // ---------- LOAD USER ----------
+        async function loadUser() {
+            try {
+                const response = await apiFetch('/api/auth/me');
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return null;
+                }
+                const user = await response.json();
+                currentUser = user;
+                return user;
+            } catch (err) {
+                console.error('Load user error:', err);
+                return null;
+            }
+        }
+
+        // ---------- LOAD AT-RISK MEMBERS ----------
+        async function loadAtRiskMembers() {
+            try {
+                const response = await apiFetch('/api/at-risk/at_risk');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch members');
+                }
+                members = await response.json();
+                return members;
+            } catch (err) {
+                console.error('Load members error:', err);
+                return [];
+            }
+        }
+
+        // ---------- RENDER MEMBERS ----------
+        function renderMembers() {
+            if (!members || members.length === 0) {
+                membersContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users-slash"></i>
+                        <p>No members found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Calculate stats
+            const total = members.length;
+            const totalHabitsCount = members.reduce((sum, m) => sum + m.total_habits, 0);
+            const totalCompleted = members.reduce((sum, m) => sum + m.completed_today, 0);
+            const totalMissed = members.reduce((sum, m) => sum + m.missed_habits, 0);
+            const avgCompletionRate = totalHabitsCount > 0 
+                ? Math.round((totalCompleted / totalHabitsCount) * 100) 
+                : 0;
+
+            // Update stats
+            totalMembers.textContent = total;
+            avgCompletion.textContent = avgCompletionRate + '%';
+            totalHabits.textContent = totalHabitsCount;
+            missedToday.textContent = totalMissed;
+
+            let html = '<div class="members-list">';
+            
+            members.forEach((member, index) => {
+                const riskClass = member.risk_level.toLowerCase().replace(' ', '-');
+                const initial = getInitial(member.name);
+                const completionRate = member.total_habits > 0 
+                    ? Math.round((member.completed_today / member.total_habits) * 100) 
+                    : 0;
+                
+                const progressClass = member.risk_level === 'High' ? 'high' 
+                    : member.risk_level === 'Medium' ? 'medium' 
+                    : member.risk_level === 'Low' ? 'low' 
+                    : 'no-habits';
+
+                html += `
+                    <div class="member-item ${riskClass}-risk">
+                        <div class="member-info">
+                            <div class="member-avatar">${escapeHtml(initial)}</div>
+                            <span class="member-name">${escapeHtml(member.name)}</span>
+                        </div>
+                        <div class="member-stats-mini">
+                            <span>📋 ${member.total_habits}</span>
+                            <span class="completed">✅ ${member.completed_today}</span>
+                            <span class="missed">❌ ${member.missed_habits}</span>
+                            <span>${completionRate}%</span>
+                        </div>
+                        <div class="member-progress-mini">
+                            <div class="progress-fill-mini ${progressClass}" style="width: ${completionRate}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            membersContainer.innerHTML = html;
+        }
+
+        // ---------- REFRESH DATA ----------
+        async function refreshData() {
+            await loadAtRiskMembers();
+            renderMembers();
+            showToast('Data updated successfully!', 'success');
+        }
+
+        // ---------- INIT ----------
+        async function init() {
+            await loadUser();
+            await refreshData();
+        }
+
+        // Start the app
+        init();
+
+        // Expose functions globally
+        window.goToDashboard = goToDashboard;
+        window.refreshData = refreshData;
+    </script>
+
+</body>
+</html>

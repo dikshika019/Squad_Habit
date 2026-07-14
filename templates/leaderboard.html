@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard · Squad Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #a0c0ff, #1b2a5e 80%);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 3rem;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.35);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #0b1a3b;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateX(-3px);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0b1a3b;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+            color: #1b2a5e;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #0b1a3b;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: rgba(11, 26, 59, 0.2);
+            color: #0b1a3b;
+        }
+
+        .btn-primary:hover {
+            background: rgba(11, 26, 59, 0.35);
+            color: #fff;
+        }
+
+        .btn-gold {
+            background: rgba(255, 215, 0, 0.25);
+            color: #8a7a1a;
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-gold:hover {
+            background: rgba(255, 215, 0, 0.4);
+            color: #fff;
+        }
+
+        /* Admin Badge */
+        .admin-badge {
+            background: linear-gradient(135deg, #ffd700, #ffb700);
+            color: #0b1a3b;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        /* Leaderboard Card (Preview) */
+        .leaderboard-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: 0.2s;
+        }
+
+        .leaderboard-card:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateX(5px);
+        }
+
+        .leaderboard-card .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .leaderboard-card .left h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0b1a3b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .leaderboard-card .right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #0b1a3b;
+        }
+
+        .leaderboard-card .rank-icon {
+            font-size: 1.2rem;
+        }
+
+        /* Leaderboard Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: #0b1a3b;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-header h2 i {
+            color: #ffc107;
+        }
+
+        .modal-close {
+            background: rgba(11, 26, 59, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #0b1a3b;
+        }
+
+        .modal-close:hover {
+            background: rgba(11, 26, 59, 0.2);
+            transform: rotate(90deg);
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th {
+            text-align: left;
+            padding: 0.8rem 0.5rem;
+            font-weight: 600;
+            color: rgba(11, 26, 59, 0.7);
+            border-bottom: 2px solid rgba(11, 26, 59, 0.1);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .leaderboard-table td {
+            padding: 0.8rem 0.5rem;
+            color: #0b1a3b;
+            border-bottom: 1px solid rgba(11, 26, 59, 0.05);
+        }
+
+        .leaderboard-table tr:hover td {
+            background: rgba(11, 26, 59, 0.03);
+        }
+
+        .leaderboard-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #ffd700, #ffb700);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(192, 192, 192, 0.3);
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #cd7f32, #b8692a);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(205, 127, 50, 0.3);
+        }
+
+        .rank-default {
+            background: rgba(11, 26, 59, 0.1);
+            color: #0b1a3b;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: #0b1a3b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .streak-badge {
+            background: rgba(255, 70, 70, 0.1);
+            color: #dc3545;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .streak-badge i {
+            font-size: 0.7rem;
+        }
+
+        .completion-bar {
+            width: 100px;
+            height: 6px;
+            background: rgba(11, 26, 59, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .completion-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+
+        .completion-fill.gold {
+            background: linear-gradient(90deg, #ffd700, #ffb700);
+        }
+
+        .completion-fill.silver {
+            background: linear-gradient(90deg, #c0c0c0, #a8a8a8);
+        }
+
+        .completion-fill.bronze {
+            background: linear-gradient(90deg, #cd7f32, #b8692a);
+        }
+
+        .completion-text {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-left: 8px;
+            color: #0b1a3b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #0b1a3b;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(11, 26, 59, 0.6);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+            color: #0b1a3b;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions {
+                justify-content: stretch;
+            }
+            .header-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            .modal {
+                padding: 1.5rem;
+                width: 95%;
+            }
+            .leaderboard-table {
+                font-size: 0.85rem;
+            }
+            .completion-bar {
+                width: 60px;
+            }
+            .leaderboard-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .leaderboard-card .right {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h1>
+                    <i class="fas fa-trophy"></i>
+                    <span id="squadTitle">Leaderboard</span>
+                </h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-gold" onclick="viewRisk()">
+                    <i class="fas fa-crown"></i> View Risk Members
+                </button>
+                <button class="btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="stat-card" style="background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(8px); border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                <div class="stat-icon">👑</div>
+                <div class="stat-value" id="topMember">-</div>
+                <div class="stat-label">Top Member</div>
+            </div>
+            <div class="stat-card" style="background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(8px); border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value" id="avgStreak">0</div>
+                <div class="stat-label">Average Streak</div>
+            </div>
+            <div class="stat-card" style="background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(8px); border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="avgCompletion">0%</div>
+                <div class="stat-label">Avg Completion</div>
+            </div>
+            <div class="stat-card" style="background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(8px); border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalMembers">0</div>
+                <div class="stat-label">Total Members</div>
+            </div>
+        </div>
+
+        <!-- Top 3 Podium -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;" id="podiumContainer">
+            <div style="text-align: center; padding: 1.5rem; background: rgba(255, 255, 255, 0.15); border-radius: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🥈</div>
+                <div style="font-weight: 600; color: #0b1a3b;" id="secondPlace">-</div>
+                <div style="font-size: 0.85rem; color: rgba(11, 26, 59, 0.6);">2nd Place</div>
+            </div>
+            <div style="text-align: center; padding: 1.5rem; background: rgba(255, 215, 0, 0.15); border-radius: 1.5rem; border: 2px solid rgba(255, 215, 0, 0.3); transform: scale(1.05);">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">👑</div>
+                <div style="font-weight: 700; color: #0b1a3b; font-size: 1.2rem;" id="firstPlace">-</div>
+                <div style="font-size: 0.85rem; color: rgba(11, 26, 59, 0.6);">🏆 1st Place</div>
+            </div>
+            <div style="text-align: center; padding: 1.5rem; background: rgba(255, 255, 255, 0.15); border-radius: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🥉</div>
+                <div style="font-weight: 600; color: #0b1a3b;" id="thirdPlace">-</div>
+                <div style="font-size: 0.85rem; color: rgba(11, 26, 59, 0.6);">3rd Place</div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Preview -->
+        <div id="previewContainer">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading leaderboard...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div class="modal-overlay" id="leaderboardModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-crown"></i> Squad Leaderboard</h2>
+                <button class="modal-close" onclick="closeLeaderboard()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="leaderboardContent">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading leaderboard data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ---------- STATE ----------
+        let squadId = null;
+        let leaderboardData = [];
+        let currentUser = null;
+        let squadAdminId = null; // Store the squad admin ID
+
+        // ---------- DOM REFS ----------
+        const squadTitle = document.getElementById('squadTitle');
+        const previewContainer = document.getElementById('previewContainer');
+        const modal = document.getElementById('leaderboardModal');
+        const leaderboardContent = document.getElementById('leaderboardContent');
+        const toast = document.getElementById('toast');
+
+        // Stats elements
+        const topMember = document.getElementById('topMember');
+        const avgStreak = document.getElementById('avgStreak');
+        const avgCompletion = document.getElementById('avgCompletion');
+        const totalMembers = document.getElementById('totalMembers');
+
+        // Podium elements
+        const firstPlace = document.getElementById('firstPlace');
+        const secondPlace = document.getElementById('secondPlace');
+        const thirdPlace = document.getElementById('thirdPlace');
+
+        let toastTimeout = null;
+
+        // ---------- HELPERS ----------
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // ---------- API HELPERS ----------
+        async function apiFetch(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(options.headers || {})
+                }
+            });
+            return response;
+        }
+
+        // ---------- LOAD USER ----------
+        async function loadUser() {
+            try {
+                const response = await apiFetch('/api/auth/me');
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return null;
+                }
+                const user = await response.json();
+                currentUser = user;
+                return user;
+            } catch (err) {
+                console.error('Load user error:', err);
+                return null;
+            }
+        }
+
+        // ---------- LOAD SQUAD DETAILS (to get admin info) ----------
+        async function loadSquadDetails() {
+            try {
+                const response = await apiFetch(`/api/squads/${squadId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch squad details');
+                }
+                const squad = await response.json();
+                squadAdminId = squad.created_by; // Store the admin user ID
+                return squad;
+            } catch (err) {
+                console.error('Load squad details error:', err);
+                return null;
+            }
+        }
+
+        // ---------- LOAD LEADERBOARD ----------
+        async function loadLeaderboard() {
+            try {
+                const response = await apiFetch(`/api/leaderboard/${squadId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch leaderboard');
+                }
+                leaderboardData = await response.json();
+                return leaderboardData;
+            } catch (err) {
+                console.error('Load leaderboard error:', err);
+                return [];
+            }
+        }
+
+        // ---------- RENDER PREVIEW (with admin badges) ----------
+        function renderPreview() {
+            if (!leaderboardData || leaderboardData.length === 0) {
+                previewContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users-slash"></i>
+                        <p>No members in this squad yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Update stats
+            const top = leaderboardData[0];
+            topMember.textContent = top ? top.name : '-';
+            
+            const totalStreak = leaderboardData.reduce((sum, m) => sum + (m.streak || 0), 0);
+            avgStreak.textContent = Math.round(totalStreak / leaderboardData.length);
+            
+            const totalCompletion = leaderboardData.reduce((sum, m) => sum + (m.completion_rate || 0), 0);
+            avgCompletion.textContent = Math.round(totalCompletion / leaderboardData.length) + '%';
+            
+            totalMembers.textContent = leaderboardData.length;
+
+            // Update podium
+            const top3 = leaderboardData.slice(0, 3);
+            firstPlace.textContent = top3[0] ? top3[0].name : '-';
+            secondPlace.textContent = top3[1] ? top3[1].name : '-';
+            thirdPlace.textContent = top3[2] ? top3[2].name : '-';
+
+            // Show top 5 in preview with cards
+            const top5 = leaderboardData.slice(0, 5);
+            let html = `
+                <div style="background: rgba(255,255,255,0.15); border-radius: 1.5rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.1);">
+                    <h3 style="color: #0b1a3b; margin-bottom: 1rem; font-size: 1rem;">
+                        <i class="fas fa-list"></i> Top 5 Members
+                    </h3>
+            `;
+
+            // Use card-based layout (matching your requested logic)
+            top5.forEach((member, index) => {
+                const rank = index + 1;
+                const rankEmoji = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                
+                // Check if this member is the squad admin
+                const isAdmin = member.user_id === squadAdminId || member.is_admin === true;
+                
+                let adminBadge = '';
+                if (isAdmin) {
+                    adminBadge = `
+                        <span class="admin-badge">Admin</span>
+                    `;
+                }
+
+                html += `
+                    <div class="leaderboard-card">
+                        <div class="left">
+                            <span class="rank-icon">${rankEmoji}</span>
+                            <h3>
+                                ${escapeHtml(member.name)}
+                                ${adminBadge}
+                            </h3>
+                        </div>
+                        <div class="right">
+                            🔥 ${member.streak || 0} days |
+                            📈 ${member.completion_rate || 0}%
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <button class="btn btn-gold" onclick="openLeaderboard()">
+                            <i class="fas fa-expand"></i> View Full Leaderboard
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            previewContainer.innerHTML = html;
+        }
+
+        // ---------- RENDER FULL LEADERBOARD (Modal) ----------
+        function renderFullLeaderboard() {
+            if (!leaderboardData || leaderboardData.length === 0) {
+                leaderboardContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users-slash"></i>
+                        <p>No members in this squad yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Member</th>
+                            <th>🔥 Streak</th>
+                            <th>📊 Completion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            leaderboardData.forEach((member, index) => {
+                const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-default';
+                const rankIcon = index === 0 ? '👑' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                
+                const completionColor = member.completion_rate >= 70 ? '' : member.completion_rate >= 40 ? 'gold' : 'silver';
+                
+                // Check if this member is the squad admin
+                const isAdmin = member.user_id === squadAdminId || member.is_admin === true;
+                
+                let adminBadge = '';
+                if (isAdmin) {
+                    adminBadge = `
+                        <span class="admin-badge">Admin</span>
+                    `;
+                }
+                
+                html += `
+                    <tr>
+                        <td>
+                            <span class="rank-badge ${rankClass}">${rankIcon}</span>
+                        </td>
+                        <td>
+                            <span class="member-name">
+                                ${escapeHtml(member.name)}
+                                ${adminBadge}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="streak-badge">
+                                <i class="fas fa-fire"></i> ${member.streak || 0} days
+                            </span>
+                        </td>
+                        <td>
+                            <div class="completion-bar">
+                                <div class="completion-fill ${completionColor}" style="width: ${member.completion_rate || 0}%"></div>
+                            </div>
+                            <span class="completion-text">${member.completion_rate || 0}%</span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(11,26,59,0.1); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                    <span style="color: rgba(11,26,59,0.6); font-size: 0.85rem;">
+                        <i class="fas fa-users"></i> Total Members: ${leaderboardData.length}
+                    </span>
+                    <span style="color: rgba(11,26,59,0.6); font-size: 0.85rem;">
+                        <i class="fas fa-calendar-alt"></i> Updated: ${new Date().toLocaleString()}
+                    </span>
+                </div>
+            `;
+            
+            leaderboardContent.innerHTML = html;
+        }
+
+        // ---------- LEADERBOARD MODAL ----------
+        function openLeaderboard() {
+            modal.classList.add('active');
+            renderFullLeaderboard();
+        }
+
+        function closeLeaderboard() {
+            modal.classList.remove('active');
+        }
+
+        // Close modal on overlay click
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeLeaderboard();
+        });
+
+        // Close modal on Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeLeaderboard();
+            }
+        });
+
+        // ---------- REFRESH DATA ----------
+        async function refreshData() {
+            await loadSquadDetails(); // Load admin info first
+            await loadLeaderboard();
+            renderPreview();
+            if (modal.classList.contains('active')) {
+                renderFullLeaderboard();
+            }
+            showToast('Leaderboard updated!', 'success');
+        }
+
+        // ---------- NAVIGATION ----------
+        function goBack() {
+            window.location.href = '/dashboard';
+        }
+        
+        function viewRisk() {
+            window.location.href = '/at_risk';
+        }
+
+        // ---------- INIT ----------
+        async function init() {
+            squadId = getQueryParam('squad_id');
+            if (!squadId) {
+                alert('No squad selected. Redirecting to dashboard.');
+                window.location.href = '/dashboard';
+                return;
+            }
+
+            await loadUser();
+            squadTitle.textContent = 'Leaderboard';
+            await refreshData();
+        }
+
+        // Start the app
+        init();
+
+        // Expose functions globally
+        window.openLeaderboard = openLeaderboard;
+        window.closeLeaderboard = closeLeaderboard;
+        window.refreshData = refreshData;
+        window.goBack = goBack;
+        window.viewRisk = viewRisk;
+    </script>
+
+</body>
+</html>

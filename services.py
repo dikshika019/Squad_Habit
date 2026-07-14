@@ -1,7 +1,4 @@
-from sqlalchemy.orm import Session
-from models import HabitLog, Habit, User
 from datetime import datetime, timedelta
-from uuid import UUID
 
 def calculate_streak(user_id: UUID, habit_id: UUID, db: Session) -> int:
     """Calculate current streak for a user's habit"""
@@ -43,38 +40,3 @@ def calculate_completion_rate(user_id: UUID, squad_id: UUID, db: Session) -> flo
                 completed += 1
     
     return (completed / total_required) * 100 if total_required > 0 else 0
-
-def get_today_status(user_id: UUID, habit_id: UUID, db: Session) -> bool:
-    """Check if a user has completed a habit today"""
-    today = datetime.utcnow().date()
-    log = db.query(HabitLog).filter(
-        HabitLog.habit_id == habit_id,
-        HabitLog.user_id == user_id,
-        HabitLog.date == today
-    ).first()
-    return log.completed if log else False
-
-def mark_habit_done(user_id: UUID, habit_id: UUID, db: Session) -> bool:
-    """Mark a habit as done for today"""
-    today = datetime.utcnow().date()
-    
-    log = db.query(HabitLog).filter(
-        HabitLog.habit_id == habit_id,
-        HabitLog.user_id == user_id,
-        HabitLog.date == today
-    ).first()
-    
-    if log:
-        log.completed = True
-        log.marked_at = datetime.utcnow()
-    else:
-        log = HabitLog(
-            habit_id=habit_id,
-            user_id=user_id,
-            date=today,
-            completed=True
-        )
-        db.add(log)
-    
-    db.commit()
-    return True

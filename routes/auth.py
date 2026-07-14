@@ -1,140 +1,253 @@
-from fastapi import APIRouter, HTTPException, Request, Depends, status
-from fastapi.responses import RedirectResponse, JSONResponse
-from sqlalchemy.orm import Session
-from authlib.integrations.starlette_client import OAuth
-from ..core.config import settings
-from ..core.database import get_db
-from ..services.auth_service import AuthService
-from ..middleware.auth import get_current_user
-from ..schemas.auth import UserResponse, LoginResponse, LogoutResponse
-from ..models.user import User
+import uuid
+import httpx
 
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+from urllib.parse import urlencode
 
-# Initialize OAuth
-oauth = OAuth()
-oauth.register(
-    name='google',
-    client_id=settings.GOOGLE_CLIENT_ID,
-    client_secret=settings.GOOGLE_CLIENT_SECRET,
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={
-        'scope': 'openid email profile',
-        'prompt': 'select_account'  # Force account selection
-    }
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+    Request
 )
 
+from fastapi.responses import RedirectResponse, JSONResponse
+
+from sqlalchemy.orm import Session
+
+from database import get_db
+from models import User
+from schemas import UserResponse
+from auth import (
+    create_access_token,
+    get_current_user,
+    get_google_user_info
+)
+from config import settings
+
+router = APIRouter()
+
+
+# -----------------------------
+# Google Login
+# -----------------------------
 @router.get("/google")
-async def google_login(request: Request):
-    """
-    Redirect to Google OAuth login page
-    """
-    redirect_uri = settings.GOOGLE_REDIRECT_URI
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+async def google_login():
 
-@router.get("/google/callback")
-async def google_callback(request: Request, db: Session = Depends(get_db)):
-    """
-    Handle Google OAuth callback
-    """
-    try:
-        # Get token from Google
-        token = await oauth.google.authorize_access_token(request)
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to get access token from Google"
-            )
-        
-        # Get user info from token
-        user_info = await AuthService.get_google_user_info(token["access_token"])
-        
-        # Authenticate or create user
-        user = await AuthService.authenticate_or_create_user(user_info, db)
-        
-        # Create JWT token
-        token_data = AuthService.create_user_token(user)
-        
-        # Redirect to frontend with token
-        redirect_url = f"{settings.FRONTEND_URL}/auth/callback?token={token_data['access_token']}"
-        return RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
-        
-    except HTTPException:
-        # Re-raise HTTP exceptions
-        raise
-    except Exception as e:
-        # Log error and return generic error
-        print(f"OAuth callback error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Authentication failed. Please try again."
-        )
+    state = str(uuid.uuid4())
 
-@router.get("/me", response_model=UserResponse)
-async def get_current_user_info(
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Get current authenticated user information
-    """
-    return current_user
+    params = {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "offline",
+        "prompt": "select_account",
+        "state": state
+    }
 
-@router.post("/logout", response_model=LogoutResponse)
-async def logout(
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Logout user (client-side token removal required)
-    """
-    return LogoutResponse(
-        message="Logged out successfully. Please remove the token from client.",
-        success=True
+    auth_url = (
+        "https://accounts.google.com/o/oauth2/v2/auth?"
+        + urlencode(params)
     )
 
-@router.post("/logout/all")
-async def logout_all_devices(
-    current_user: User = Depends(get_current_user)
+    return RedirectResponse(auth_url)
+
+
+# -----------------------------
+# Google Callback
+# -----------------------------
+@router.get("/google/callback")
+async def google_callback(
+    request: Request,
+    code: str = None,
+    error: str = None,
+    db: Session = Depends(get_db)
 ):
-    """
-    Logout from all devices (server-side token revocation)
-    """
-    # In a real implementation, you would blacklist all tokens for this user
-    # For now, we just return success
-    return {
-        "message": "Logged out from all devices",
-        "success": True
+
+    if error:
+
+        raise HTTPException(
+            status_code=400,
+            detail=error
+        )
+
+    if code is None:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Authorization code missing."
+        )
+
+    token_url = "https://oauth2.googleapis.com/token"
+
+    token_data = {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "client_secret": settings.GOOGLE_CLIENT_SECRET,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI
     }
 
+    async with httpx.AsyncClient() as client:
+
+        token_response = await client.post(
+            token_url,
+            data=token_data
+        )
+
+    if token_response.status_code != 200:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to fetch Google token."
+        )
+
+    token_json = token_response.json()
+
+    google_access_token = token_json.get("access_token")
+
+    if google_access_token is None:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Google access token missing."
+        )
+
+    google_user = await get_google_user_info(
+        google_access_token
+    )
+
+    user = db.query(User).filter(
+        User.email == google_user.email
+    ).first()
+
+    if user is None:
+
+        user = User(
+            google_id=google_user.id,
+            name=google_user.name,
+            email=google_user.email,
+            profile_picture=google_user.picture
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    else:
+
+        user.google_id = google_user.id
+        user.name = google_user.name
+        user.profile_picture = google_user.picture
+
+        db.commit()
+        db.refresh(user)
+
+    access_token = create_access_token(
+
+        {
+            "sub": str(user.id),
+            "email": user.email
+        }
+
+    )
+
+    response = RedirectResponse(
+        url="/dashboard",
+        status_code=status.HTTP_302_FOUND
+    )
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="lax",
+        secure=False
+    )
+
+    return response
+
+
+# -----------------------------
+# Current User
+# -----------------------------
+# In routes/auth.py
+
+# In routes/auth.py
+
+@router.get("/me", response_model=UserResponse)
+async def me(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Get current user information
+    """
+    try:
+        # get_current_user will raise exception if not authenticated
+        current_user = await get_current_user(request, db)
+        
+        # Return user data
+        return UserResponse(
+            id=current_user.id,
+            name=current_user.name,
+            email=current_user.email,
+            profile_picture=current_user.profile_picture
+        )
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions (401, 403, etc.)
+        raise
+    except Exception as e:
+        print(f"[ERROR] Unexpected error in /me: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching user: {str(e)}"
+        )
+# -----------------------------
+# Verify Token
+# -----------------------------
 @router.get("/verify")
-async def verify_token(
-    current_user: User = Depends(get_current_user)
+async def verify(
+
+    current_user: User = Depends(
+        get_current_user
+    )
+
 ):
-    """
-    Verify if token is valid and get user info
-    """
+
     return {
-        "valid": True,
+        "success": True,
         "user": {
-            "id": str(current_user.id),
-            "email": current_user.email,
-            "name": current_user.name
+            "id": current_user.id,
+            "name": current_user.name,
+            "email": current_user.email
         }
     }
 
-# Test endpoint to check authentication
-@router.get("/test")
-async def test_auth(
-    current_user: User = Depends(get_current_user)
+
+# -----------------------------
+# Logout
+# -----------------------------
+@router.post("/logout")
+async def logout(
+
+    current_user: User = Depends(
+        get_current_user
+    )
+
 ):
-    """
-    Test authentication endpoint
-    """
-    return {
-        "message": "Authentication successful!",
-        "user": {
-            "id": str(current_user.id),
-            "email": current_user.email,
-            "name": current_user.name,
-            "profile_picture": current_user.profile_picture
+
+    response = JSONResponse(
+
+        content={
+            "success": True,
+            "message": "Logged out successfully."
         }
-    }
+
+    )
+
+    response.delete_cookie("access_token")
+
+    return response

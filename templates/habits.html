@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker · Squad Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ... ALL YOUR EXISTING STYLES REMAIN EXACTLY THE SAME ... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #a0c0ff, #1b2a5e 80%);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 3rem;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #0b1a3b;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateX(-3px);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0b1a3b;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+            color: #1b2a5e;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #0b1a3b;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: rgba(11, 26, 59, 0.2);
+            color: #0b1a3b;
+        }
+
+        .btn-primary:hover {
+            background: rgba(11, 26, 59, 0.35);
+            color: #fff;
+        }
+
+        .btn-gold {
+            background: rgba(255, 215, 0, 0.25);
+            color: #8a7a1a;
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-gold:hover {
+            background: rgba(255, 215, 0, 0.4);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: rgba(200, 50, 50, 0.2);
+            color: #8a1a1a;
+        }
+
+        .btn-danger:hover {
+            background: rgba(200, 50, 50, 0.4);
+            color: #fff;
+        }
+
+        .btn-success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #1a6a2a;
+        }
+
+        .btn-success:hover {
+            background: rgba(40, 167, 69, 0.4);
+            color: #fff;
+        }
+
+        .btn-invite {
+            background: rgba(111, 66, 193, 0.2);
+            color: #4a1a7a;
+            border-color: rgba(111, 66, 193, 0.3);
+        }
+
+        .btn-invite:hover {
+            background: rgba(111, 66, 193, 0.4);
+            color: #fff;
+        }
+
+        /* Invite Link Display */
+        .invite-link-container {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .invite-link-container.show {
+            display: flex;
+        }
+
+        .invite-link-container .invite-link-text {
+            flex: 1;
+            color: #0b1a3b;
+            font-size: 0.9rem;
+            word-break: break-all;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .invite-link-container .invite-link-text a {
+            color: #1b2a5e;
+            text-decoration: none;
+        }
+
+        .invite-link-container .invite-link-text a:hover {
+            text-decoration: underline;
+        }
+
+        .invite-link-container .copy-btn {
+            background: rgba(40, 167, 69, 0.2);
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #1a6a2a;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .invite-link-container .copy-btn:hover {
+            background: rgba(40, 167, 69, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* ... REST OF YOUR EXISTING STYLES ... */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-3px);
+        }
+
+        .stat-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0b1a3b;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(11, 26, 59, 0.7);
+            margin-top: 0.3rem;
+            font-weight: 500;
+        }
+
+        .stat-sub {
+            font-size: 0.75rem;
+            color: rgba(11, 26, 59, 0.5);
+            margin-top: 0.2rem;
+        }
+
+        /* Member Status Bar */
+        .member-bar {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .member-bar-title {
+            font-weight: 600;
+            color: #0b1a3b;
+            margin-right: 0.5rem;
+        }
+
+        .member-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .member-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 0.3rem 0.8rem 0.3rem 0.5rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #0b1a3b;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .member-chip .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .member-chip .dot.green {
+            background: #28a745;
+        }
+        .member-chip .dot.yellow {
+            background: #ffc107;
+        }
+        .member-chip .dot.red {
+            background: #dc3545;
+        }
+        .member-chip .dot.gray {
+            background: #6c757d;
+        }
+
+        /* Habits Grid */
+        .habits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .habit-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .habit-card:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .habit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .habit-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0b1a3b;
+            word-break: break-word;
+        }
+
+        .habit-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .habit-actions button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #0b1a3b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .habit-actions button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1);
+        }
+
+        .habit-actions button.delete:hover {
+            background: rgba(200, 50, 50, 0.3);
+            color: #8a1a1a;
+        }
+
+        .habit-progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ffc107, #fd7e14);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #dc3545, #e74c3c);
+        }
+
+        .habit-percent {
+            font-weight: 600;
+            color: #0b1a3b;
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .habit-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: rgba(11, 26, 59, 0.6);
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .habit-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mark-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            background: rgba(40, 167, 69, 0.2);
+            color: #1a6a2a;
+            font-size: 0.85rem;
+        }
+
+        .mark-btn:hover {
+            background: rgba(40, 167, 69, 0.4);
+            transform: scale(1.05);
+        }
+
+        .mark-btn.done {
+            background: rgba(40, 167, 69, 0.4);
+            color: #fff;
+        }
+
+        .mark-btn.done:hover {
+            background: rgba(200, 50, 50, 0.3);
+            color: #8a1a1a;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: #0b1a3b;
+            font-size: 1.5rem;
+        }
+
+        .modal-close {
+            background: rgba(11, 26, 59, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #0b1a3b;
+        }
+
+        .modal-close:hover {
+            background: rgba(11, 26, 59, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #0b1a3b;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            border: 1px solid rgba(11, 26, 59, 0.2);
+            background: rgba(255, 255, 255, 0.5);
+            font-size: 1rem;
+            color: #0b1a3b;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: #1b2a5e;
+            box-shadow: 0 0 0 3px rgba(27, 42, 94, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #0b1a3b;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(11, 26, 59, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+            color: #0b1a3b;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions {
+                justify-content: stretch;
+            }
+            .header-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .habits-grid {
+                grid-template-columns: 1fr;
+            }
+            .member-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .invite-link-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h1>
+                    <i class="fas fa-check-double"></i>
+                    <span id="squadTitle">Habit Tracker</span>
+                </h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-gold" onclick="goToLeaderboard()">
+                    <i class="fas fa-trophy"></i> Leaderboard
+                </button>
+                <!-- NEW: Generate Invite Link Button -->
+                <button class="btn btn-invite" onclick="generateInvite()">
+                    <i class="fas fa-link"></i> Generate Invite Link
+                </button>
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i> New Habit
+                </button>
+                <button class="btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- NEW: Invite Link Display Container -->
+        <div class="invite-link-container" id="inviteLinkContainer">
+            <span style="font-weight: 600; color: #0b1a3b;">
+                <i class="fas fa-share-alt"></i> Invite Link:
+            </span>
+            <span class="invite-link-text" id="inviteLinkText">
+                <a href="#" target="_blank" id="inviteLinkUrl">Loading...</a>
+            </span>
+            <button class="copy-btn" onclick="copyInviteLink()">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value" id="statStreak">0</div>
+                <div class="stat-label">Current Streak</div>
+                <div class="stat-sub">Consecutive days all habits completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="statCompletion">0%</div>
+                <div class="stat-label">Completion Rate</div>
+                <div class="stat-sub">% of habits completed this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value" id="statAverage">0%</div>
+                <div class="stat-label">Squad Average</div>
+                <div class="stat-sub">Overall squad health score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-value" id="statBrokeChain">-</div>
+                <div class="stat-label">Who Broke the Chain</div>
+                <div class="stat-sub" id="statMissedDays">Missed 0 days</div>
+            </div>
+        </div>
+
+        <!-- Member Status Bar -->
+        <div class="member-bar" id="memberBar">
+            <span class="member-bar-title"><i class="fas fa-users"></i> Squad Members:</span>
+            <div class="member-chips" id="memberChips">
+                <span style="color: rgba(11,26,59,0.5); font-size: 0.9rem;">Loading members...</span>
+            </div>
+        </div>
+
+        <!-- Habits Grid -->
+        <div id="habitsContainer">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading habits...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal-overlay" id="habitModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create Habit</h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="habitForm">
+                <input type="hidden" id="habitId" value="">
+                <div class="form-group">
+                    <label for="habitTitle">Habit Title</label>
+                    <input type="text" id="habitTitle" placeholder="e.g. Daily Coding" required />
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-check"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ---------- STATE ----------
+        let squadId = null;
+        let habits = [];
+        let members = [];
+        let editingHabitId = null;
+        let currentUser = null;
+        let currentInviteLink = '';
+
+        // ---------- DOM REFS ----------
+        const squadTitle = document.getElementById('squadTitle');
+        const habitsContainer = document.getElementById('habitsContainer');
+        const modal = document.getElementById('habitModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const habitForm = document.getElementById('habitForm');
+        const habitIdInput = document.getElementById('habitId');
+        const habitTitleInput = document.getElementById('habitTitle');
+        const submitBtn = document.getElementById('submitBtn');
+        const memberChips = document.getElementById('memberChips');
+        const toast = document.getElementById('toast');
+        const inviteLinkContainer = document.getElementById('inviteLinkContainer');
+        const inviteLinkText = document.getElementById('inviteLinkText');
+        const inviteLinkUrl = document.getElementById('inviteLinkUrl');
+
+        // Stats elements
+        const statStreak = document.getElementById('statStreak');
+        const statCompletion = document.getElementById('statCompletion');
+        const statAverage = document.getElementById('statAverage');
+        const statBrokeChain = document.getElementById('statBrokeChain');
+        const statMissedDays = document.getElementById('statMissedDays');
+
+        let toastTimeout = null;
+
+        // ---------- HELPERS ----------
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // ---------- NAVIGATION ----------
+        function goToLeaderboard() {
+            if (squadId) {
+                window.location.href = `/leaderboard?squad_id=${encodeURIComponent(squadId)}`;
+            } else {
+                showToast('Squad ID not found', 'error');
+            }
+        }
+
+        // ---------- API HELPERS ----------
+        async function apiFetch(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(options.headers || {})
+                }
+            });
+            return response;
+        }
+
+        // ---------- LOAD USER ----------
+        async function loadUser() {
+            try {
+                const response = await apiFetch('/api/auth/me');
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return null;
+                }
+                const user = await response.json();
+                currentUser = user;
+                return user;
+            } catch (err) {
+                console.error('Load user error:', err);
+                return null;
+            }
+        }
+
+        // ---------- LOAD MEMBERS ----------
+        async function loadMembers() {
+            try {
+                const response = await apiFetch(`/api/squads/${squadId}/members`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch members');
+                }
+                members = await response.json();
+                return members;
+            } catch (err) {
+                console.error('Load members error:', err);
+                return [];
+            }
+        }
+
+        // ---------- GENERATE INVITE LINK (NEW) ----------
+        async function generateInvite() {
+            try {
+                const response = await fetch(
+                    `/api/squads/${squadId}/invite`,
+                    {
+                        method: "POST",
+                        credentials: "include"
+                    }
+                );
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentInviteLink = data.invite_link || data.inviteLink || data.url || data.link;
+                    if (currentInviteLink) {
+                        inviteLinkUrl.href = currentInviteLink;
+                        inviteLinkUrl.textContent = currentInviteLink;
+                        inviteLinkContainer.classList.add('show');
+                        showToast('Invite link generated successfully!', 'success');
+                    } else {
+                        showToast('No invite link received from server', 'error');
+                    }
+                } else {
+                    showToast(data.detail || 'Failed to generate invite link', 'error');
+                }
+            } catch (err) {
+                console.error('Generate invite error:', err);
+                showToast('Failed to generate invite link. Please try again.', 'error');
+            }
+        }
+
+        // ---------- COPY INVITE LINK (NEW) ----------
+        async function copyInviteLink() {
+            try {
+                if (!currentInviteLink) {
+                    showToast('No invite link to copy', 'error');
+                    return;
+                }
+
+                await navigator.clipboard.writeText(currentInviteLink);
+                showToast('Invite link copied to clipboard!', 'success');
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = currentInviteLink;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Invite link copied to clipboard!', 'success');
+                } catch (e) {
+                    showToast('Failed to copy link. Please select and copy manually.', 'error');
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // ---------- LOAD HABITS ----------
+        async function loadHabits() {
+            try {
+                const response = await apiFetch(`/api/habits/${squadId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch habits');
+                }
+                habits = await response.json();
+                
+                // Fetch logs for each habit
+                for (let habit of habits) {
+                    const logResponse = await apiFetch(`/api/habits/single/${habit.id}`);
+                    if (logResponse.ok) {
+                        const data = await logResponse.json();
+                        habit.logs = data.logs || [];
+                    } else {
+                        habit.logs = [];
+                    }
+                }
+                return habits;
+            } catch (err) {
+                console.error('Load habits error:', err);
+                return [];
+            }
+        }
+
+        // ---------- LOAD ANALYTICS ----------
+        async function loadAnalytics() {
+            try {
+                const response = await apiFetch(`/api/habits/squads/${squadId}/analytics`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch analytics');
+                }
+                const data = await response.json();
+                statStreak.textContent = data.current_streak || 0;
+                statCompletion.textContent = (data.completion_rate || 0) + '%';
+                statAverage.textContent = (data.squad_average || 0) + '%';
+                statBrokeChain.textContent = data.who_broke_chain || 'Nobody';
+                statMissedDays.textContent = `Missed ${data.missed_days || 0} days`;
+                return data;
+            } catch (err) {
+                console.error('Load analytics error:', err);
+            }
+        }
+
+        // ---------- RENDER MEMBERS ----------
+        function renderMembers() {
+            if (!members || members.length === 0) {
+                memberChips.innerHTML = '<span style="color: rgba(11,26,59,0.5); font-size: 0.9rem;">No members in this squad</span>';
+                return;
+            }
+
+            let html = '';
+            members.forEach(member => {
+                const initial = (member.name || member.username || 'U')[0].toUpperCase();
+                const statuses = ['green', 'yellow', 'red', 'green', 'green'];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                html += `
+                    <div class="member-chip">
+                        <span class="dot ${status}"></span>
+                        ${escapeHtml(member.name || member.username || 'Unknown')}
+                    </div>
+                `;
+            });
+            memberChips.innerHTML = html;
+        }
+
+        // ---------- RENDER HABITS ----------
+        function renderHabits() {
+            if (!habits || habits.length === 0) {
+                habitsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>No habits created yet. Create your first habit!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="habits-grid">';
+            habits.forEach(habit => {
+                const logs = habit.logs || [];
+                const completed = logs.filter(l => l.completed).length;
+                const total = logs.length || 1;
+                const percentage = Math.round((completed / total) * 100);
+                
+                let progressClass = '';
+                if (percentage >= 70) progressClass = '';
+                else if (percentage >= 40) progressClass = 'warning';
+                else progressClass = 'danger';
+
+                const today = new Date().toISOString().split('T')[0];
+                const isMarked = logs.some(log => log.date === today && log.completed);
+
+                html += `
+                    <div class="habit-card">
+                        <div class="habit-header">
+                            <div class="habit-title">${escapeHtml(habit.title)}</div>
+                            <div class="habit-actions">
+                                <button onclick="toggleHabit('${habit.id}')" title="Mark today">
+                                    <i class="fas ${isMarked ? 'fa-check-circle' : 'fa-circle'}"></i>
+                                </button>
+                                ${currentUser && habit.created_by === currentUser.id ? `
+                                    <button onclick="editHabit('${habit.id}')" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="delete" onclick="deleteHabit('${habit.id}')" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="habit-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill ${progressClass}" style="width: ${percentage}%"></div>
+                            </div>
+                            <span class="habit-percent">${percentage}%</span>
+                        </div>
+                        <div class="habit-meta">
+                            <span><i class="far fa-calendar-alt"></i> Created: ${habit.created_at ? habit.created_at.split('T')[0] : 'recent'}</span>
+                            <span><i class="fas fa-fire"></i> ${completed}/${total} days</span>
+                            ${isMarked ? '<span style="color: #28a745;"><i class="fas fa-check-circle"></i> Today ✓</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            habitsContainer.innerHTML = html;
+        }
+
+        // ---------- TOGGLE HABIT ----------
+        async function toggleHabit(habitId) {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const habit = habits.find(h => h.id === habitId);
+                const isMarked = habit.logs && habit.logs.some(log => log.date === today && log.completed);
+                
+                const response = await apiFetch(`/api/habits/${habitId}/mark`, {
+                    method: 'POST',
+                    body: JSON.stringify({ completed: !isMarked })
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Failed to mark habit');
+                }
+
+                showToast(isMarked ? 'Habit unmarked successfully' : 'Habit marked as done!', 'success');
+                await refreshData();
+            } catch (err) {
+                console.error('Toggle habit error:', err);
+                showToast(err.message || 'Failed to mark habit', 'error');
+            }
+        }
+
+        // ---------- CREATE/EDIT HABIT ----------
+        function openCreateModal() {
+            editingHabitId = null;
+            modalTitle.textContent = 'Create Habit';
+            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Create';
+            habitIdInput.value = '';
+            habitTitleInput.value = '';
+            modal.classList.add('active');
+        }
+
+        function editHabit(habitId) {
+            const habit = habits.find(h => h.id === habitId);
+            if (!habit) return;
+            
+            editingHabitId = habitId;
+            modalTitle.textContent = 'Edit Habit';
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Update';
+            habitIdInput.value = habitId;
+            habitTitleInput.value = habit.title;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            habitForm.reset();
+        }
+
+        // Close modal on overlay click
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Close modal on Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+
+        // Handle form submit
+        habitForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const title = habitTitleInput.value.trim();
+            if (!title) {
+                alert('Please enter a habit title');
+                return;
+            }
+
+            const isEdit = editingHabitId !== null;
+            const url = isEdit ? `/api/habits/${editingHabitId}` : '/api/habits/';
+            const method = isEdit ? 'PUT' : 'POST';
+            const body = isEdit ? { title } : { squad_id: squadId, title };
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                const response = await apiFetch(url, {
+                    method: method,
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Failed to save habit');
+                }
+
+                showToast(isEdit ? 'Habit updated successfully!' : 'Habit created successfully!', 'success');
+                closeModal();
+                await refreshData();
+            } catch (err) {
+                console.error('Save habit error:', err);
+                showToast(err.message || 'Failed to save habit', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = isEdit ? '<i class="fas fa-save"></i> Update' : '<i class="fas fa-plus"></i> Create';
+            }
+        });
+
+        // ---------- DELETE HABIT ----------
+        async function deleteHabit(habitId) {
+            if (!confirm('Are you sure you want to delete this habit?')) return;
+
+            try {
+                const response = await apiFetch(`/api/habits/${habitId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Failed to delete habit');
+                }
+
+                showToast('Habit deleted successfully', 'success');
+                await refreshData();
+            } catch (err) {
+                console.error('Delete habit error:', err);
+                showToast(err.message || 'Failed to delete habit', 'error');
+            }
+        }
+
+        // ---------- REFRESH DATA ----------
+        async function refreshData() {
+            await loadHabits();
+            renderHabits();
+            await loadAnalytics();
+        }
+
+        // ---------- NAVIGATION ----------
+        function goBack() {
+            window.location.href = '/dashboard';
+        }
+
+        // ---------- INIT ----------
+        async function init() {
+            squadId = getQueryParam('squad_id');
+            if (!squadId) {
+                alert('No squad selected. Redirecting to dashboard.');
+                window.location.href = '/dashboard';
+                return;
+            }
+
+            // Load user first
+            await loadUser();
+
+            // Load squad data
+            squadTitle.textContent = 'Habit Tracker';
+
+            // Load members and render
+            await loadMembers();
+            renderMembers();
+
+            // Load habits and analytics
+            await refreshData();
+        }
+
+        // Start the app
+        init();
+
+        // Expose functions globally
+        window.openCreateModal = openCreateModal;
+        window.editHabit = editHabit;
+        window.deleteHabit = deleteHabit;
+        window.toggleHabit = toggleHabit;
+        window.closeModal = closeModal;
+        window.refreshData = refreshData;
+        window.goBack = goBack;
+        window.goToLeaderboard = goToLeaderboard;
+        window.generateInvite = generateInvite;
+        window.copyInviteLink = copyInviteLink;
+    </script>
+
+</body>
+</html>
