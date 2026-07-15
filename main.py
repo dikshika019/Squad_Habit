@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+
 from routes import squads
 
 from database import Base, engine
@@ -34,8 +34,7 @@ app.add_middleware(
 )
 
 
-# Static Files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 
 # Routers
