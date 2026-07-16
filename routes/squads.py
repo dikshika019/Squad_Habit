@@ -97,7 +97,7 @@ async def generate_invite(
     db.refresh(invite)
 
     return {
-        "invite_link": f"http://localhost:8000/api/squads/invite/{token}",
+        "invite_link":f"https://squadhabits.onrender.com/api/squads/invite/{token}",
         "expires_at": invite.expires_at
     }
 
